@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rx Vanilla Example</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.1.0/rxjs.umd.js"></script>
+<script>
+    const {fromEvent} = rxjs;
+    const { ajax } = rxjs.ajax;
+    const {map, pipe, filter, debounceTime, switchMap, mergeMap, concatMap} = rxjs.operators
+
+    const inputEl = document.createElement("input");
+    document.body.appendChild(inputEl)
+
+    const inputElChange$ = fromEvent(inputEl, "input")
+    inputElChange$.pipe(
+        map(o => o.target.value),
+        filter(o => o.trim() !== ""),
+        debounceTime(100),
+        map(o => new URLSearchParams({query: o})),
+        switchMap(o => ajax.getJSON(`http://localhost:7070/api/search?${o}`))
+    ).subscribe({
+        next: value => console.log("next", value),
+        error: value => console.error("error", value),
+        complete: value => console.info("complete", value)
+    })
+</script>
+</body>
+</html>
